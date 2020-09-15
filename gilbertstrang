@@ -1,0 +1,88 @@
+# MATLAB Toeplitz matrix (4 x 4), K positive definite
+K = toeplitz([2 -1 zeros(1,2)]) # row 1
+
+# circulant matrix/periodic/cyclic convolution
+# singular and not invertible
+C = toeplitz([2 -1 0 -1])
+
+# triupper matrix (3 x 3)
+triu(ones(3)) # sum matrix
+
+% Euler's method ODE1
+% 目标：求解dy/dt = F(t,y) with y(t0) = y0
+function yout = ode1(F,t0,h,tfinal,y0)
+% 5个输入变量:
+% F: 匿名函数，定义差分等式
+% y0：初始函数值
+% 另外4个是标量（以h的步伐从t0到tfinal）
+% 1个vector输出值：values of solution at points in the interval [t0,tfinal]
+    y = y0;
+    yout = y;
+    for t = t0 : h : tfinal-h
+        s = F(t,y); % 斜率
+        y = y + h*s
+        yout = [yout; y];
+    end
+
+% Function Handles
+F = @(t,y).06*y % 利率问题
+F(0,1) % 测试，得0.06
+F = @(t,y)t^2 + y^2
+
+format bank % Matlab 自带将float改成美元cents小数位
+
+% ODE2 midpoint method
+function yout = ode2(F,t0,h,tfinal,y0)
+% 固定步长h
+    y = y0;
+    yout = y;
+    for t = t0 : h : tfinal-h
+    s1 = F(t,y);
+    s2 = F(t+h/2, y+h*s1/2);
+    y = y + h*s2;
+    yout = [yout; y];
+  end
+
+
+% 三角函数例
+% dy/dt = sqrt(1-y^2);
+% y(0) = 0
+% 区间[0,pi/2];
+F = @(t,y) sqrt(1-y^2)
+t0 = 0
+h = pi/32
+tfinal = pi/2
+y0 = 0
+y = ode2(F,t0,h,tfinal,0) % call建好的ODE2
+plot(t,y,'o-')
+axis([0 pi/2 0 1])
+set(gca,'xtick',[0:pi/8:pi/2],'xticklabel',{'0','\pi/8','\pi/4','3\pi/8','\pi/2'} )
+xlabel('t'), ylabel('y')
+
+% Runge-Kutta Method ODE4
+function yout = ode4(F,t0,h,tfinal,y0)
+    y = y0;
+    yout = y;
+    for t = t0 : h : tfinal-h
+        s1 = F(t,y);
+        s2 = F(t+h/2, y+h*s1/2);
+        s3 = F(t+h/2, y+h*s2/2);
+        s4 = F(t+h, y+h*s3);
+        y = y + h*(s1 + 2*s2 + 2*s3 + s4)/6;
+        yout = [yout; y];
+    end
+% example dy/dt = y^2 - y^3
+
+% Polynomial: P(x) = 2x^5 - 3x^4 + 5x^3 - x^2 - 10x
+p = [2 -3 5 -1 -10 0]
+% roots (solutions of P(x) = 0)
+xi = roots(p)
+
+% Polynomial: P(x) = (x-p1)(x-p2)...(x-pn)
+p1 = poly(xi) * 2 # go back to original cofficient vector
+
+% T = .1 is sampling time
+t = 0: .1: 10 % interval [0, 10]
+step(num, den, t)
+% get steady state
+dcgain(num, den)
